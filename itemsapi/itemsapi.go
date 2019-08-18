@@ -3,7 +3,6 @@ package main
 import (
     "fmt"
     "github.com/LiamHowe/ebuy/itemsapi/itemsservice"
-    "github.com/LiamHowe/ebuy/itemsapi/item"
     "encoding/json"
     "log"
     "net/http"
@@ -16,10 +15,15 @@ func GetItemsEndpoint(w http.ResponseWriter, req *http.Request) {
 
 func main() {
     router := mux.NewRouter()
-    itemsservice.AddItem(item.NewItem(1, "toaster", item.NewPrice("GBP", 15, 0), 5))
-    itemsservice.AddItem(item.NewItem(2, "microwave", item.NewPrice("GBP", 25, 99), 0))
-    itemsservice.AddItem(item.NewItem(3, "sofa", item.NewPrice("USD", 425, 0), 0))
+    router.Use(commonMiddleware)
     router.HandleFunc("/items", GetItemsEndpoint).Methods("GET")
-    fmt.Println(itemsservice.GetItems())
+    fmt.Println("eBuy Items API started")
     log.Fatal(http.ListenAndServe(":1234", router))
+}
+
+func commonMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Add("Content-Type", "application/json")
+        next.ServeHTTP(w, r)
+    })
 }

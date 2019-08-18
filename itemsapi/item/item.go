@@ -9,6 +9,12 @@ type ItemResponse struct {
     Name string             `json:"name,omitempty"`
     Price string            `json:"price,omitempty"`
     NumberAvailable int     `json:"numberAvailable"`
+    Seller SellerResponse   `json:"seller,omitempty"`
+}
+
+type SellerResponse struct {
+    ID int                  `json:"id,omitempty"`
+    Username string         `json:"username,omitempty"`
 }
 
 type Item struct {
@@ -16,49 +22,42 @@ type Item struct {
     Name string
     Price Price
     NumberAvailable int
+    Seller Seller
+}
+
+type Seller struct {
+    ID int
+    Username string
 }
 
 type Price struct {
-    CurrencyCode string
+    CurrencySymbol string
     Integer int
     Decimal int
 }
 
+func (price Price) isValid() bool {
+    return price.CurrencySymbol != "" && price.Integer >= 0 &&
+        price.Decimal >= 0 && price.Decimal <= 99
+}
+
+func (price Price) isNotValid() bool {
+    return !price.isValid()
+}
+
 func (price Price) String() string {
-    currencySymbol := getCurrency(price.CurrencyCode).CurrencySymbol
-    priceString := currencySymbol + strconv.Itoa(price.Integer)
+    if price.isNotValid() {
+        return ""
+    }
+    priceString := price.CurrencySymbol + strconv.Itoa(price.Integer)
     if price.Decimal > 0 {
         priceString += "." + strconv.Itoa(price.Decimal)
     }
     return priceString
 }
 
-type Currency struct {
-    CurrencyCode string
-    CurrencySymbol string
-}
-
-var currencies = [...]Currency{
-    Currency{"GBP", "£"},
-    Currency{"EUR", "€"},
-    Currency{"USD", "$"},
-}
-
-func getCurrency(currencyCode string) *Currency {
-    for _, currency := range currencies {
-        if currency.CurrencyCode == currencyCode {
-            return &currency
-        }
-    }
-    return nil
-}
-
-func NewItemResponse(id int, name string, price string, numberAvailable int) ItemResponse {
-    return ItemResponse{id, name, price, numberAvailable}
-}
-
-func NewItem(id int, name string, price Price, numberAvailable int) Item {
-    return Item{id, name, price, numberAvailable}
+func NewItemResponse(id int, name string, price string, numberAvailable int, seller SellerResponse) ItemResponse {
+    return ItemResponse{id, name, price, numberAvailable, seller}
 }
 
 func NewPrice(currency string, integer int, decimal int) Price {
