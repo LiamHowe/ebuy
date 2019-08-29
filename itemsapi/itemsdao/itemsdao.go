@@ -23,7 +23,7 @@ const getUsersQuery =
     "SELECT i.id, i.name, i.number_available, c.currency_symbol, " +
     "   i.price_integer, i.price_decimal, s.id AS seller_id, s.username AS seller_username " +
     "FROM items i " +
-    "   JOIN currency c ON c.id = i.currency_code_id" +
+    "   JOIN currency c ON c.id = i.currency_id" +
     "   JOIN sellers s ON s.id = i.seller_id"
 
 func (itemsDao itemsDao) GetItems() []item.Item {
@@ -48,7 +48,7 @@ func (itemsDao itemsDao) GetItems() []item.Item {
         if err != nil {
             panic(err)
         }
-        price := item.Price{currencySymbol, priceInteger, priceDecimal}
+        price := item.NewPriceWithSymbol(currencySymbol, priceInteger, priceDecimal)
         seller := item.Seller{sellerId, sellerUsername}
         items = append(items, item.Item{id, name, price, numberAvailable, seller})
     }
@@ -61,8 +61,24 @@ func (itemsDao itemsDao) GetItems() []item.Item {
     return items
 }
 
-func AddItem(item item.Item) {
-    // TODO
+func (itemsDao itemsDao) AddItem(item item.Item) {
+    db, err := sql.Open("postgres", itemsDao.psqlInfo)
+    if err != nil {
+        panic(err)
+    }
+    defer db.Close()
+
+    sqlStatement := `
+        INSERT INTO items (name, number_available, price_integer, price_decimal, currency_id, seller_id)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING id`
+    id := 0
+    err = db.QueryRow(sqlStatement, item.Name, item.NumberAvailable,
+        item.Price.Integer, item.Price.Decimal, item.Price.CurrencyId, item.Seller.ID,
+    ).Scan(&id)
+    if err != nil {
+      panic(err)
+    }
 }
 
 func NewItemsDao() itemsDao {

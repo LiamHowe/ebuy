@@ -17,6 +17,16 @@ type SellerResponse struct {
     Username string         `json:"username,omitempty"`
 }
 
+type ItemRequest struct {
+    ID int                  `json:"id"`
+    Name string             `json:"name"`
+    CurrencyId int          `json:"currencyId"`
+    PriceInteger int        `json:"priceInteger"`
+    PriceDecimal int        `json:"priceDecimal"`
+    NumberAvailable int     `json:"numberAvailable"`
+    SellerId int            `json:"sellerId"`
+}
+
 type Item struct {
     ID int
     Name string
@@ -31,6 +41,7 @@ type Seller struct {
 }
 
 type Price struct {
+    CurrencyId int
     CurrencySymbol string
     Integer int
     Decimal int
@@ -60,6 +71,10 @@ func NewItemResponse(id int, name string, price string, numberAvailable int, sel
     return ItemResponse{id, name, price, numberAvailable, seller}
 }
 
-func NewPrice(currency string, integer int, decimal int) Price {
-    return Price{currency, integer, decimal}
+func NewPriceWithSymbol(currencySymbol string, integer int, decimal int) Price {
+    return Price{0, currencySymbol, integer, decimal}
+}
+
+func NewPriceWithId(currencyId int, integer int, decimal int) Price {
+    return Price{currencyId, "", integer, decimal}
 }
