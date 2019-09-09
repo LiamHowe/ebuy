@@ -67,6 +67,10 @@ func (price Price) String() string {
     return priceString
 }
 
+func EmptyItemResponse() ItemResponse {
+    return ItemResponse{}
+}
+
 func NewItemResponse(id int, name string, price string, numberAvailable int, seller SellerResponse) ItemResponse {
     return ItemResponse{id, name, price, numberAvailable, seller}
 }

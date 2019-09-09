@@ -5,15 +5,31 @@ import (
     "github.com/LiamHowe/ebuy/itemsapi/itemsdao"
 )
 
-func GetItems() []item.ItemResponse {
+func GetItems(sellerId, currencyId int) []item.ItemResponse {
     itemsDao := itemsdao.NewItemsDao()
-    items := itemsDao.GetItems()
+    items := itemsDao.GetItems(sellerId, currencyId)
     itemResponses := make([]item.ItemResponse, len(items))
     for index, item := range items {
         itemResponses[index] = convertItemToResponse(item)
     }
 
     return itemResponses
+}
+
+func GetItem(id int) item.ItemResponse {
+    itemsDao := itemsdao.NewItemsDao()
+    requestItem := itemsDao.GetItem(id)
+    var itemResponse item.ItemResponse
+    if (requestItem != nil) {
+        itemResponse = convertItemToResponse(*requestItem)
+    }
+    return itemResponse
+}
+
+
+func DeleteItem(id int) bool {
+    itemsDao := itemsdao.NewItemsDao()
+    return itemsDao.DeleteItem(id)
 }
 
 func AddItem(itemRequest item.ItemRequest) {
